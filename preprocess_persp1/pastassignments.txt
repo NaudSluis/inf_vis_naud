@@ -1,0 +1,121 @@
+# Load the Iris flower dataset using pandas
+df = pd.read_excel("Dry_Bean_Dataset.xlsx")
+
+for column in df.drop('Class', axis=1):
+    quartiles = df[column].quantile([0.25, 0.75])
+    iqr = quartiles[0.75] - quartiles[0.25]
+    print(round(df[column].mean(), 3), round(df[column].median(), 3), round(df[column].std(), 3), round(iqr, 3)
+          )
+
+frq = df['Class'].value_counts()
+print(df['Class'].mode())
+for i in frq:
+    perc = i/13611 * 100
+    print(round(perc, 2))
+
+df_2 = pd.read_csv("weather_prediction_dataset.csv")[:1000]
+
+for x in range(137):
+    df_2.pop(df_2.columns.values[-1])
+
+# for column in df.drop(columns=['DATE', 'MONTH', 'BASEL_cloud_cover', 'BUDAPEST_cloud_cover', 'DE_BILT_cloud_cover', 'BASEL_temp_mean', 'BASEL_temp_min', 'BASEL_temp_max', 'BUDAPEST_temp_mean', 'BUDAPEST_temp_min', 'BUDAPEST_temp_max', 'DE_BILT_temp_mean', 'DE_BILT_temp_min', 'DE_BILT_temp_max'], axis=1):
+count = 0
+for column in df_2:
+    count += 1    
+    quartiles = df_2[column].quantile([0.25, 0.75])
+    iqr = quartiles[0.75] - quartiles[0.25]
+    print(round(df_2[column].mean(), 3), round(df_2[column].median(), 3), 
+          round(df_2[column].std(), 3), round(iqr, 3), column)
+
+
+import re
+
+# Read the input CSV file
+input_file = "export.csv"
+df = pd.read_csv(input_file)
+
+# Define a regular expression pattern to extract date components
+pattern = r"(\d{1,2})\s+(\w+)\s+(\d{4})"
+
+# Define a function to convert date components to the desired format
+def convert_date(match):
+    day = match.group(1)
+    month = match.group(2)
+    year = match.group(3)
+
+    # Convert month name to month number
+    month_dict = {
+        'January': '01',
+        'February': '02',
+        'March': '03',
+        'April': '04',
+        'May': '05',
+        'June': '06',
+        'July': '07',import matplotlib
+        'August': '08',
+        'September': '09',
+        'October': '10',
+        'November': '11',
+        'December': '12'
+    }
+    month = month_dict.get(month)
+
+    return f"{year}-{month}-{day}"
+
+# Convert the dates to the desired format
+df['date'] = df['date'].apply(lambda x: re.sub(pattern, convert_date, x))
+
+# Save the updated data to a new CSV file
+output_file = "hosp.csv"
+df.to_csv(output_file, index=False)
+
+
+# Input and output file paths
+input_file = "owid-covid-data.csv"
+output_file = "covid.csv"
+
+# Specify the column index containing the dates (0-based index)
+date_column_index = 3 
+
+# Read the input file and transform the dates
+with open(input_file, "r") as csv_input, open(output_file, "w", newline="") as csv_output:
+    reader = csv.reader(csv_input)
+    writer = csv.writer(csv_output)
+
+    for row in reader:
+        # Transform the date in the specified column
+        if len(row) > date_column_index:
+            row[date_column_index] = transform_date(row[date_column_index])
+
+        writer.writerow(row)
+
+
+pd.options.display.max_rows = 100
+df_covid = pd.read_csv('covid.csv')
+df_hosp1 = pd.read_csv('hosp1.csv')
+df_covid['date']=df_covid['date'].astype(int)
+df_hosp1['date'] =df_covid['date'].astype(int)
+rslt_df = df_covid[df_covid['iso_code'] == 'OWID_WLS']
+rd_df = rslt_df[rslt_df['date'] == '2020']
+
+# contain_values = df[df['Date'].str.contains('2020', '2021', '2022')]
+df_merged = pd.merge(rslt_df, df_hosp1, how='left' , on='date')
+df_merged
+
+
+
+
+
+# df_covid = pd.read_csv('owid-covid-data.csv')
+
+
+from scipy.stats import pearsonr
+print(df_merged['hosp_patients'].corr(df_merged['COVID-19 admissions (suspected and confirmed)']))
+val_icu = list(df_merged['icu_patients'])
+val = list(df_merged['date'])
+y_val_patien = [int(z) if pd.notna(z) else 0 for z in df_merged['All submisions'] ]
+y_val_icu = [int(i) for i in val_icu]
+x_val = [int(x) for x in val]
+plt.plot(x_val, y_val_icu)
+plt.plot(x_val, y_val_patien)
+plt.show
